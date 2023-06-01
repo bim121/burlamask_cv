@@ -16,7 +16,6 @@ def get_landmarks(im):
     return np.array([[p.x, p.y] for p in PREDICTOR(im, rects[0]).parts()])
 
 def transformation_from_points(points1, points2):
-    """Return a transformation that maps points1 onto points2."""
     points1 = points1.astype(np.float64)
     points2 = points2.astype(np.float64)
 
@@ -36,13 +35,11 @@ def transformation_from_points(points1, points2):
     return np.hstack([(s2 / s1) * R, (c2.T - (s2 / s1) * R @ c1.T)[:, None]])
 
 def create_mask(points, shape, face_scale):
-    """Create a mask of the given shape, using the given landmark points"""
     groups = [
-        # indices of brow and eye landmarks
         [17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 36, 37, 38, 39, 40, 41, 42, 43,
          44, 45, 46, 47],
 
-        # indices of mouth and nose landmarks
+
         [27, 28, 29, 30, 31, 32, 33, 34, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57,
          58, 59, 60]
     ]
@@ -60,8 +57,7 @@ def create_mask(points, shape, face_scale):
 
     return mask_im
 
-def correct_colours(warped_face_im, body_im, face_scale): 
-    """Take the details from warped face im and the rest from body_im."""
+def correct_colours(warped_face_im, body_im, face_scale):
     blur_amount = int(3 * 0.5 * face_scale) * 2 + 1
     kernel_size = (blur_amount, blur_amount)
     
@@ -76,7 +72,6 @@ face_points = get_landmarks(face_im)
 body_points = get_landmarks(body_im)
 
 
-# Зображення, в якому перше фото використовується як тіло, а друге - як обличчя
 M = transformation_from_points(face_points, body_points)
 warped_face_im = cv2.warpAffine(face_im, M, (body_im.shape[1], body_im.shape[0]))
 
@@ -88,7 +83,6 @@ combined_im = (warped_face_im * mask_im + body_im * (1 - mask_im))
 
 cv2.imwrite('combined3.jpg', combined_im)
 
-# Зображення, в якому перше фото використовується як обличчя, а друге - як тіло
 M = transformation_from_points(body_points, face_points)
 warped_face_im = cv2.warpAffine(body_im, M, (face_im.shape[1], face_im.shape[0]))
 
