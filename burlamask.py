@@ -3,8 +3,11 @@ import cv2
 import dlib
 import numpy as np
 import urllib.request
+import base64
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 DETECTOR = dlib.get_frontal_face_detector()
 PREDICTOR = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
@@ -76,6 +79,7 @@ def correct_colours(warped_face_im, body_im, face_scale):
 
 @app.route('/process_images', methods=['POST'])
 def process_images():
+    print("gfd");
     face_url = request.json['face_url']
     body_url = request.json['body_url']
 
@@ -98,8 +102,6 @@ def process_images():
     mask_im = create_mask(body_points, body_im.shape, face_scale)
     combined_im = (warped_face_im * mask_im + body_im * (1 - mask_im))
 
-    cv2.imwrite('combined.jpg', combined_im)
-
     M = transformation_from_points(body_points, face_points)
     warped_face_im = cv2.warpAffine(body_im, M, (face_im.shape[1], face_im.shape[0]))
 
@@ -107,12 +109,23 @@ def process_images():
     corrected_face_im = correct_colours(warped_face_im, face_im, face_scale)
 
     mask_im = create_mask(face_points, face_im.shape, face_scale)
-    combined_im = (warped_face_im * mask_im + face_im * (1 - mask_im))
+    combined_im2 = (warped_face_im * mask_im + face_im * (1 - mask_im))
 
-    cv2.imwrite('combined2.jpg', combined_im)
+    # Convert images to base64 strings
+    combined_im_base64 = cv2.imencode('.jpg', combined_im)[1].tobytes()
+    combined_im2_base64 = cv2.imencode('.jpg', combined_im2)[1].tobytes()
 
-    return jsonify({'result': 'success'})
+    response_data = {
+        'face_image_data': base64.b64encode(combined_im_base64).decode('utf-8'),
+        'body_image_data': base64.b64encode(combined_im2_base64).decode('utf-8')
+    }
+
+    return jsonify(response_data)
+
+@app.route('/test', methods=['POST'])
+def test():
+    print("fdgh")
 
 
 if __name__ == '__main__':
-    app.run(port=5001)
+    app.run(host='0.0.0.0')

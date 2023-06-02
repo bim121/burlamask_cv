@@ -1,0 +1,7 @@
+Flask==2.0.1
+opencv-python==4.7.0.72
+numpy==1.24.3
+cmake==3.26.3
+boost
+dlib==19.24.1
+Flask-Cors==3.0.10
