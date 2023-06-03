@@ -83,7 +83,6 @@ def process_images():
     face_url = request.json['face_url']
     body_url = request.json['body_url']
 
-    # Download the images
     urllib.request.urlretrieve(face_url, 'face.jpg')
     urllib.request.urlretrieve(body_url, 'body.jpg')
 
@@ -111,7 +110,6 @@ def process_images():
     mask_im = create_mask(face_points, face_im.shape, face_scale)
     combined_im2 = (warped_face_im * mask_im + face_im * (1 - mask_im))
 
-    # Convert images to base64 strings
     combined_im_base64 = cv2.imencode('.jpg', combined_im)[1].tobytes()
     combined_im2_base64 = cv2.imencode('.jpg', combined_im2)[1].tobytes()
 
@@ -121,10 +119,6 @@ def process_images():
     }
 
     return jsonify(response_data)
-
-@app.route('/test', methods=['POST'])
-def test():
-    print("fdgh")
 
 
 if __name__ == '__main__':
